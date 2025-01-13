@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphy</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Graphy</h1>
+        
+        <!-- Data Input Section -->
+        <div id="data-input">
+            <h2>Enter Data</h2>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>Value</th>
+                        <th>Color</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button id="add-row-btn">Add Row</button>
+        </div>
+
+        <!-- Graph Options Section -->
+        <div id="graph-options">
+            <h2>Graph Options</h2>
+            <label for="graph-type">Graph Type:</label>
+            <select id="graph-type">
+                <option value="bar">Bar</option>
+                <option value="line">Line</option>
+                <option value="pie">Pie</option>
+                <option value="doughnut">Doughnut</option>
+                <option value="polarArea">Polar Area</option>
+               
+            </select>
+            <h3>Animation Settings</h3>
+            <label for="animation-duration">Animation Duration (ms):</label>
+            <input type="number" id="animation-duration" value="1000" min="0" step="100">
+            <label for="animation-easing">Animation Easing:</label>
+            <select id="animation-easing">
+                <option value="easeInOutQuad">Ease In-Out Quad</option>
+                <option value="linear">Linear</option>
+                <option value="easeInBounce">Ease In Bounce</option>
+                <option value="easeOutElastic">Ease Out Elastic</option>
+            </select>
+            <button id="generate-graph-btn">Generate Graph</button>
+        </div>
+
+        <!-- Graph Display Section -->
+        <div id="graph-display">
+            <canvas id="chartCanvas"></canvas>
+        </div>
+
+        <!-- Download Section -->
+        <div id="download-options">
+            <button id="download-image-btn">Download as Image</button>
+            <button id="download-gif-btn">Download as GIF</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
