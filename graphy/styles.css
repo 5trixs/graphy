@@ -2,20 +2,31 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #8400ff;
+    background-color: #2E073F;
 }
 
 .container {
     max-width: 900px;
     margin: 20px auto;
     padding: 20px;
-    background: #adf8e5;
+    background: #7A1CAC;
     box-shadow: 5px 5px 4px rgba(0, 0, 0, 0.1);
     border-radius: 5px;
 }
 
 h1, h2 {
-    color: #333;
+    color: #ffffff;
+}
+
+h1{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#graph-options{
+    color: white;
 }
 
 #data-table {
@@ -37,7 +48,7 @@ h1, h2 {
 button {
     padding: 10px 15px;
     margin: 5px;
-    background-color: #a200ff;
+    background-color: #AD49E1;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -45,7 +56,7 @@ button {
 }
 
 button:hover {
-    background-color: #ff0062;
+    background-color: #ff004c;
     transition: 0.4s;
 }
 
