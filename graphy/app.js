@@ -32,14 +32,13 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         dataTable.appendChild(newRow);
 
-        // Add event listener for delete button
         newRow.querySelector(".delete-row-btn").addEventListener("click", () => {
             newRow.remove();
         });
     });
-    
-    // Generate graph
-    generateGraphBtn.addEventListener("click", () => {
+
+    // Function to get data from table
+    function getTableData() {
         const labels = [];
         const values = [];
         const colors = [];
@@ -53,11 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 colors.push(color);
             }
         });
+        return { labels, values, colors };
+    }
 
+    // Generate graph
+    generateGraphBtn.addEventListener("click", () => {
+        const { labels, values, colors } = getTableData();
         if (chartInstance) {
             chartInstance.destroy();
         }
-
         chartInstance = new Chart(chartCanvas, {
             type: graphTypeSelect.value,
             data: {
@@ -81,86 +84,88 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Download graph as image
     downloadImageBtn.addEventListener("click", () => {
+        if (!chartInstance) {
+            alert("Please generate a graph first.");
+            return;
+        }
         const link = document.createElement("a");
         link.href = chartCanvas.toDataURL("image/png");
         link.download = "graph.png";
         link.click();
     });
 
-    // Download graph as animated GIF or MP4
-    downloadGifBtn.addEventListener("click", () => {
-        if (!chartInstance) {
-            alert("Please generate a graph first.");
-            return;
-        }
-    
-        try {
-            const gif = new GIF({
-                workers: 2,
-                quality: 10,
-                workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js',
-            });
-    
-            const frameCount = 30; // Number of frames for the GIF
-            const frameDuration = 100; // Delay per frame in milliseconds
-            let currentFrame = 0;
-    
-            function captureFrame() {
-                if (currentFrame >= frameCount) {
+
+// Download graph as GIF
+downloadGifBtn.addEventListener("click", async () => {
+    if (!chartInstance) {
+        alert("Please generate a graph first.");
+        return;
+    }
+
+    const { labels, values, colors } = getTableData();
+    const animationDuration = parseInt(animationDurationInput.value) || 1000;
+    const frameInterval = 33; // ~30 FPS
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    // Fetch worker script and create blob URL
+    const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
+    const script = await response.text();
+    const blob = new Blob([script], { type: 'application/javascript' });
+    const workerBlobUrl = URL.createObjectURL(blob);
+
+    const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        workerScript: workerBlobUrl
+    });
+
+    let captureInterval;
+
+    chartInstance = new Chart(chartCanvas, {
+        type: graphTypeSelect.value,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Dataset",
+                data: values,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            animation: {
+                duration: animationDuration,
+                easing: animationEasingSelect.value,
+                onComplete: () => {
+                    clearInterval(captureInterval);
                     gif.render();
-                    return;
                 }
-    
-                // Ensure the canvas is updated
-                chartInstance.options.animation = false;
-                chartInstance.update();
-                
-                // Add the canvas as a frame to the GIF
-                gif.addFrame(chartCanvas, { copy: true, delay: frameDuration });
-    
-                currentFrame++;
-                setTimeout(captureFrame, frameDuration);
             }
-    
-            gif.on("finished", (blob) => {
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "graph.gif";
-                link.click();
-            });
-    
-            gif.on("error", (error) => {
-                console.error("GIF generation failed:", error);
-                alert("Failed to generate GIF. Please try again or use the MP4 download.");
-            });
-    
-            // Start capturing frames
-            captureFrame();
-        } catch (error) {
-            console.error("An unexpected error occurred:", error);
-            alert("GIF generation is not supported in your browser.");
-
-            // Fallback to MP4
-            const stream = chartCanvas.captureStream(30); // 30 FPS
-            const recorder = new MediaRecorder(stream);
-            const chunks = [];
-
-            recorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    chunks.push(event.data);
-                }
-            };
-
-            recorder.onstop = () => {
-                const blob = new Blob(chunks, { type: "video/mp4" });
-                const link = document.createElement("a");
-                link.href = URL.createObjectURL(blob);
-                link.download = "graph.mp4";
-                link.click();
-            };
-
-            recorder.start();
-            setTimeout(() => recorder.stop(), 3000); // Record for 3 seconds
         }
     });
+
+    // Set willReadFrequently to optimize canvas readbacks
+    chartCanvas.getContext('2d').willReadFrequently = true;
+
+    // Capture frames
+    captureInterval = setInterval(() => {
+        gif.addFrame(chartCanvas, { copy: true, delay: frameInterval });
+    }, frameInterval);
+
+    gif.on("finished", (blob) => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "graph.gif";
+        link.click();
+    });
+
+    gif.on("error", (error) => {
+        console.error("GIF generation failed:", error);
+        alert("Failed to generate GIF.");
+    });
+});
 });
